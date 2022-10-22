@@ -302,7 +302,7 @@ void move()
 		flag = 0;
 	}
 }
-int main()
+int main(void)
 {
 	//窗口
 	initgraph(584, 734, EX_SHOWCONSOLE);
