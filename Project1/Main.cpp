@@ -19,6 +19,46 @@ int flag = 0; //是否生成一个数字
 IMAGE imgs[11];
 //特殊处理空白图片
 IMAGE zero;
+
+void loadResource();
+int createNumber();
+void mapFillNumber();
+void init();
+void draw();
+void moveUp();
+void moveDown();
+void moveRight();
+void moveLeft();
+void move();
+
+
+int main(void)
+{
+	//窗口
+	initgraph(584, 734, EX_SHOWCONSOLE);
+
+	init();
+	loadResource();
+
+
+	drawImg(0, 0, &bk);
+	while (true)
+	{
+		draw();
+		move();
+		for (int i = 0; i < ROW; i++) {
+			for (int j = 0; j < COL; j++) {
+				printf("%d", map[i][j]);
+			}
+			printf("\n");
+		}
+	}
+	getchar();
+	return 0;
+}
+
+//资源加载
+//界面函数
 void loadResource()
 {
 	loadimage(&bk, "./pieces/bk.png", 584, 734);
@@ -39,6 +79,7 @@ void loadResource()
 }
 
 //随机产生2or4 2的概率更高
+//游戏
 int createNumber()
 {
 	if (rand() % 10 != 0)
@@ -50,7 +91,10 @@ int createNumber()
 		return 4;
 	}
 }
+
+
 //给数组空白处填充一个数
+//游戏
 void mapFillNumber()
 {
 	//随机产生两个下标
@@ -67,7 +111,10 @@ void mapFillNumber()
 		}
 	}
 }
+
+
 //初始化
+//游戏
 void init()
 {
 	//设置随机数种子
@@ -79,7 +126,9 @@ void init()
 		mapFillNumber();
 	}
 }
+
 //绘制
+//界面函数
 void draw()
 {
 	for (int i = 0; i < ROW; i++)
@@ -131,6 +180,8 @@ void draw()
 		printf("\n");
 	}
 }
+
+//以下皆为游戏函数
 //向上移动
 void moveUp()
 {
@@ -286,12 +337,18 @@ void move()
 	case 72:
 		moveUp();
 		break;
+	case 'S':
+	case 's':
 	case 80:
 		moveDown();
 		break;
+	case 'A':
+	case 'a':
 	case 75:
 		moveLeft();
 		break;
+	case 'D':
+	case 'd':
 	case 77:
 		moveRight();
 		break;
@@ -301,28 +358,4 @@ void move()
 		mapFillNumber();
 		flag = 0;
 	}
-}
-int main(void)
-{
-	//窗口
-	initgraph(584, 734, EX_SHOWCONSOLE);
-
-	init();
-	loadResource();
-
-
-	drawImg(0, 0, &bk);
-	while (true)
-	{
-		draw();
-		move();
-		for (int i = 0; i < ROW; i++) {
-			for (int j = 0; j < COL; j++) {
-				printf("%d", map[i][j]);
-			}
-			printf("\n");
-		}
-	}
-	getchar();
-	return 0;
 }
