@@ -1,16 +1,50 @@
 #include"Game.h"
+#include <stdio.h>
+#include<string.h>
+
 //存储数据的数组
-int map[ROW][COL];
-int flag = 0; //是否生成一个数字
-struct gameInfo
-{
-	int MaxScore = 0;//存储最高分数
-	int CurrentScore = 0;//存储当前分数
-	int MaxMergeNum = 0;//最大合成数字
-}gameInfo;
+int map[ROW][COL];//运行格子
+int movedflag = 0; //是否生成一个数字
+GameInfo gameInfo;//游戏运行数值组
+
+//读取文件函数
+void loadRecord() {
+	FILE* recordReader;
+	errno_t err = fopen_s(&recordReader, "recordfile.dat", "r");
+	if (err != 0 || recordReader == NULL) {
+		init();
+		return;
+	}
+	int topScore, currentScore, maxNum, currentMaxNum;
+	if (fscanf_s(recordReader, "top_score:%d current_score:%d maxNum:%d current_maxNum:%d", &topScore, &currentScore, &maxNum, &currentMaxNum) != 4) {
+		fclose(recordReader);
+		init();
+		return;
+	}
+
+	gameInfo.maxScore = topScore;
+	gameInfo.currentScore = currentScore;
+	gameInfo.maxMergeNum = maxNum;
+	gameInfo.currentMaxMergeNum = currentMaxNum;
+	gameInfo.emptyBlock = 16;
+
+	for (int i = 0; i < ROW; i++) {
+		for (int j = 0; j < COL; j++) {
+			int readInCount = fscanf_s(recordReader, "%d", &map[i][j]);
+			// 读取数据出错或者数据无效
+			if ((readInCount != 1) || (map[i][j] < 0) || (4096 <= map[i][j])) {
+				fclose(recordReader);
+				init();
+				return;
+			}
+			if (map[i][j] != 0)
+				gameInfo.emptyBlock--;
+		}
+	}
+	fclose(recordReader);
+}
 
 //随机产生2or4 2的概率更高
-//游戏
 int createNumber()
 {
 	if (rand() % 10 != 0)
@@ -23,38 +57,61 @@ int createNumber()
 	}
 }
 
-
 //给数组空白处填充一个数
-//游戏
+//20221028重写
 void mapFillNumber()
 {
-	//随机产生两个下标
-	while (true)
-	{
-		//多次产生下标的时候，可能会重复 0 1 0 1 虽然概率比较小但还是有可能
-		int r = rand() % ROW;	//0 1 2 3
-		int c = rand() % COL;	//0 1 2 3
-		//避免出现问题 首先判断原来位置是不是等于 0 如果等于 0 才放入数据
-		if (map[r][c] == 0)
-		{
-			map[r][c] = createNumber();
-			return;
-		}
-	}
+	if (gameInfo.emptyBlock == 0)
+		return;
+	int r = rand() % gameInfo.emptyBlock;
+	gameInfo.emptyBlock--;
+	int* p = &map[0][0]-1, i = 0;
+	do {
+		while (*++p);
+	} while (i++<r);
+
+	*p = createNumber();
 }
 
-
-//初始化
-//游戏
+//初始化或者游戏重启的函数
 void init()
 {
+	//面板置0初始化
+	memset(map, 0, sizeof(int) * 16);
 	//设置随机数种子
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
+
+	//游戏重启
+	gameInfo.gameOverFlag = 0;
+
+	//现有值置0
+	gameInfo.currentMaxMergeNum = 2;
+	gameInfo.currentScore = 0;
+	gameInfo.emptyBlock = 16;
 
 	//随机产生一个数，并且放到数组里面去 map[?][?] = createNumber();
 	for (int i = 0; i < 2; i++)
 	{
 		mapFillNumber();
+	}
+	
+}
+
+//分数、最高合成数和空余格子数计算器
+void ScoreCalculation(int MergeNum) {
+	//20221028加入
+	gameInfo.emptyBlock++;
+
+	if (MergeNum > gameInfo.maxMergeNum) {
+		gameInfo.currentMaxMergeNum = MergeNum;
+		gameInfo.maxMergeNum = MergeNum;
+	}
+	else if (MergeNum > gameInfo.currentMaxMergeNum) {
+		gameInfo.currentMaxMergeNum = MergeNum;
+	}
+	gameInfo.currentScore += MergeNum;
+	if (gameInfo.currentScore > gameInfo.maxScore) {
+		gameInfo.maxScore = gameInfo.currentScore;
 	}
 }
 
@@ -79,6 +136,8 @@ void moveUp()
 				else if (map[temp][i] == map[begin][i])
 				{
 					map[temp][i] += map[begin][i];
+					//计分
+					ScoreCalculation(map[temp][i]);
 					map[begin][i] = 0;
 					temp++;
 				}
@@ -91,7 +150,7 @@ void moveUp()
 					}
 					temp++;
 				}
-				flag = 1;
+				movedflag = 1;
 			}
 		}
 	}
@@ -114,6 +173,8 @@ void moveDown()
 				else if (map[temp][i] == map[begin][i])
 				{
 					map[temp][i] += map[begin][i];
+					//计分
+					ScoreCalculation(map[temp][i]);
 					map[begin][i] = 0;
 					temp--;
 				}
@@ -126,7 +187,7 @@ void moveDown()
 					}
 					temp--;
 				}
-				flag = 1;
+				movedflag = 1;
 			}
 		}
 	}
@@ -149,6 +210,8 @@ void moveLeft()
 				else if (map[i][temp] == map[i][begin])
 				{
 					map[i][temp] += map[i][begin];
+					//计分
+					ScoreCalculation(map[i][temp]);
 					map[i][begin] = 0;
 					temp++;
 				}
@@ -161,7 +224,7 @@ void moveLeft()
 					}
 					temp++;
 				}
-				flag = 1;
+				movedflag = 1;
 			}
 		}
 	}
@@ -184,6 +247,7 @@ void moveRight()
 				else if (map[i][temp] == map[i][begin])
 				{
 					map[i][temp] += map[i][begin];
+					ScoreCalculation(map[i][temp]);
 					map[i][begin] = 0;
 					temp--;
 				}
@@ -196,13 +260,13 @@ void moveRight()
 					}
 					temp--;
 				}
-				flag = 1;
+				movedflag = 1;
 			}
 		}
 	}
 }
 //移动格子
-void move()
+bool move()
 {
 	//获取键盘按键 72 80 75 77
 	int key = _getch();
@@ -229,9 +293,47 @@ void move()
 		moveRight();
 		break;
 	}
-	if (flag == 1)
+	
+	if (movedflag == 1)
 	{
 		mapFillNumber();
-		flag = 0;
+		movedflag = 0;
 	}
+	
+	return 1;
+}
+
+//游戏结束检测，为重启按钮做准备
+//暂时木有使用
+//20221026加入
+void gameOverCheck() {
+	if (gameInfo.emptyBlock != 0)
+		return;
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			if ((j + 1 < 4 && map[i][j] == map[i][j + 1]) || (i + 1 < 4 && map[i][j] == map[i + 1][j]))
+				return;
+		}
+	}
+	gameInfo.gameOverFlag = 1;
+}
+
+//游戏数据写入文件的函数
+void gameSave()
+{
+	//数据写入
+	FILE* fp;
+	
+	errno_t err=fopen_s(&fp, "recordfile.dat", "w");
+	if (fp == NULL||err!=0)
+		return;
+	fprintf(fp, "top_score:%d\ncurrent_score:%d\nmaxNum:%d\ncurrent_maxNum:%d",
+		gameInfo.maxScore, gameInfo.currentScore, gameInfo.maxMergeNum, gameInfo.currentMaxMergeNum);
+	fprintf(fp, "\n");
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			fprintf(fp, "%4d ", map[i][j]);
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
 }

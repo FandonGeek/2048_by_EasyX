@@ -1,5 +1,6 @@
 #pragma once
 #include<easyx.h>
+#include <graphics.h>
 
 void drawImg(int x, int y, IMAGE* src)
 {

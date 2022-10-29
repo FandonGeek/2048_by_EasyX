@@ -1,10 +1,15 @@
 ﻿#include<stdio.h>
-#include<easyx.h>
 #include"tools.h"
 #include"Game.h"
+#include <conio.h>
+
+#pragma comment(lib,"Winmm.lib")
+
 
 #define INTERVAL  15	//格子间的间隔
 #define GRID_SIZE 117   //格子的宽度和高度
+
+
 //38 * 195
 IMAGE bk;				//背景
 
@@ -14,47 +19,82 @@ IMAGE imgs[11];
 IMAGE zero;
 
 extern int map[ROW][COL];
-extern int flag;
-extern struct gameInfo;
+extern GameInfo gameInfo;
 
+void loadImgs();
 void loadResource();
-void draw();
 
+void drawBackgroud();
+void draw();
+void drawGameInfo();
+void drawBlocks();
+
+//游戏窗口
 int main(void)
 {
 	//窗口
 	initgraph(584, 734, EX_SHOWCONSOLE);
 
-	init();
+	/*未完成的音乐播放
+	mciSendString(_T("open 1.mp3 alias bkmusic"), NULL, 0, NULL);
+	mciSendString(_T("play bkmusic retreat"), NULL, 0, NULL);
+	*/
+
 	loadResource();
+	gameSave();
 
-
-	drawImg(0, 0, &bk);
+	draw();
+	
+	
 	while (true)
 	{
+		BeginBatchDraw();//批量画图，无闪烁
 		draw();
+		EndBatchDraw();
+
+		/*未完成的鼠标检测，用于重启游戏
+		ExMessage m;
+		m = getmessage(EX_MOUSE);
+		if (m.x >= 427 && m.x <=561  && m.y >= 107 && m.y <= 155) {
+			if (m.message == WM_LBUTTONDOWN) {
+				
+				init();
+			}
+		}
+		*/
+
 		move();
 		for (int i = 0; i < ROW; i++) {
 			for (int j = 0; j < COL; j++) {
-				printf("%d", map[i][j]);
+				printf("%4d", map[i][j]);
 			}
 			printf("\n");
 		}
+		printf("Cur:%d\nMax:%d\nMaxMergeNum:%d\nemptyBlock:%d\n", gameInfo.currentScore, gameInfo.maxScore, gameInfo.maxMergeNum,gameInfo.emptyBlock);
+		
+		//20221027加入
+		gameSave();
 	}
+	
 	getchar();
+	closegraph();
 	return 0;
 }
 
-//资源加载
-//界面函数
-void loadResource()
-{
+
+void loadImgs() {
 	loadimage(&bk, "./pieces/bk.png", 584, 734);
+
+	//0位贴图
 	loadimage(&zero, "./pieces/0.png", GRID_SIZE, GRID_SIZE);
+
+	//以下载入数字贴图
 	for (int i = 2, j = 0; i <= 2048; i *= 2, j++)
 	{
 		char imgPath[50] = { 0 };                           //字符串格式化
 		sprintf_s(imgPath, "./pieces/%d.png", i);           //缓冲区(数组) 格式字符串
+
+		//文件加载测试函数
 		for (int i = 0; i < 17; i++)					    //字符数组必须要用for循环做打印|不能用"%s"的方式打印
 		{
 			printf("%c", imgPath[i]);
@@ -66,9 +106,39 @@ void loadResource()
 	}
 }
 
-//绘制
+//资源加载
 //界面函数
-void draw()
+void loadResource()
+{
+	//图像加载
+	loadImgs();
+
+	//游戏记录加载
+	loadRecord();
+}
+
+//画图更新层
+void draw() {
+	drawGameInfo();
+	drawBlocks();
+}
+
+//背景和分数
+void drawGameInfo() {
+	drawImg(0, 0, &bk);
+
+	setbkmode(TRANSPARENT);
+	settextcolor(RGB(241, 231, 214));
+	settextstyle(20, 0,_T("黑体"));
+	char s1[10],s2[10];
+	sprintf_s(s1, "%8d", gameInfo.currentScore);
+	outtextxy(370, 50, s1);
+	sprintf_s(s2, "%8d", gameInfo.maxScore);
+	outtextxy(460, 50, s2);
+}
+
+//绘制数字块
+void drawBlocks()
 {
 	for (int i = 0; i < ROW; i++)
 	{
@@ -77,6 +147,7 @@ void draw()
 			//把每个格子左上角的坐标求出来
 			int x = k * GRID_SIZE + (k + 1) * INTERVAL + 38 - 18;
 			int y = i * GRID_SIZE + (i + 1) * INTERVAL + 195 - 17;
+			
 			switch (map[i][k]) {
 			case 0:
 				drawImg(x, y, &zero);
