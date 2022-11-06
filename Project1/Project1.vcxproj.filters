@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="资源文件\img">
+      <UniqueIdentifier>{f08401f1-586a-4e8c-9b69-b164306296f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\music">
+      <UniqueIdentifier>{d902bbc0-878b-404b-a4a4-887803b5b6c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -29,5 +35,63 @@
     <ClInclude Include="Game.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="pieces\0.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\2.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\4.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\8.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\16.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\32.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\64.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\128.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\256.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\512.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\1024.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\2048.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\4096.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\8192.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\bk.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\bk1.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+    <Image Include="pieces\gameOver.png">
+      <Filter>资源文件\img</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="pieces\bk.mp3">
+      <Filter>资源文件\music</Filter>
+    </Media>
   </ItemGroup>
 </Project>

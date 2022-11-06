@@ -2,10 +2,17 @@
 #include <stdio.h>
 #include<string.h>
 
-//存储数据的数组
-int map[ROW][COL];//运行格子
-int movedflag = 0; //是否生成一个数字
-GameInfo gameInfo;//游戏运行数值组
+//存储数据的数组&运行格子
+int map[ROW][COL];
+
+//存储移动前数据的格子，移动判断和动画所用
+int map_old[ROW][COL];
+
+//是否生成一个数字
+int movedflag = 0; 
+
+//游戏运行数值组
+GameInfo gameInfo;
 
 //读取文件函数
 void loadRecord() {
@@ -41,6 +48,7 @@ void loadRecord() {
 				gameInfo.emptyBlock--;
 		}
 	}
+	gameOverCheck();
 	fclose(recordReader);
 }
 
@@ -97,6 +105,13 @@ void init()
 	
 }
 
+void copyData() {
+	int i, j;
+	for (i = 0; i < ROW; i++)
+		for (j = 0; j < COL; j++)
+			map_old[i][j] = map[i][j];
+}
+
 //分数、最高合成数和空余格子数计算器
 void ScoreCalculation(int MergeNum) {
 	//20221028加入
@@ -113,6 +128,17 @@ void ScoreCalculation(int MergeNum) {
 	if (gameInfo.currentScore > gameInfo.maxScore) {
 		gameInfo.maxScore = gameInfo.currentScore;
 	}
+}
+
+//是否有移动的判断函数，决定movedflag的值
+bool isChanged()//检查数据是否（变化/移动） 
+{
+	int i, j;
+	for (i = 0; i < ROW; i++)
+		for (j = 0; j < COL; j++)
+			if (map_old[i][j] != map[i][j])
+				return true;
+	return false;
 }
 
 //向上移动
@@ -150,7 +176,9 @@ void moveUp()
 					}
 					temp++;
 				}
-				movedflag = 1;
+				if (isChanged()) {
+					movedflag = 1;
+				}
 			}
 		}
 	}
@@ -160,6 +188,9 @@ void moveDown()
 {
 	for (int i = 0; i < COL; i++)
 	{
+		if (gameInfo.gameOverFlag == 1) {
+			break;
+		}
 		int temp = ROW - 1;
 		for (int begin = ROW - 2; begin >= 0; begin--)
 		{
@@ -187,7 +218,9 @@ void moveDown()
 					}
 					temp--;
 				}
-				movedflag = 1;
+				if (isChanged()) {
+					movedflag = 1;
+				}
 			}
 		}
 	}
@@ -197,6 +230,9 @@ void moveLeft()
 {
 	for (int i = 0; i < COL; i++)
 	{
+		if (gameInfo.gameOverFlag == 1) {
+			break;
+		}
 		int temp = 0;
 		for (int begin = 1; begin < ROW; begin++)
 		{
@@ -224,7 +260,9 @@ void moveLeft()
 					}
 					temp++;
 				}
-				movedflag = 1;
+				if (isChanged()) {
+					movedflag = 1;
+				}
 			}
 		}
 	}
@@ -234,6 +272,9 @@ void moveRight()
 {
 	for (int i = 0; i < ROW; i++)
 	{
+		if (gameInfo.gameOverFlag == 1) {
+			break;
+		}
 		int temp = COL - 1;
 		for (int begin = COL - 2; begin >= 0; begin--)
 		{
@@ -260,36 +301,30 @@ void moveRight()
 					}
 					temp--;
 				}
-				movedflag = 1;
+				if (isChanged()) {
+					movedflag = 1;
+				}
 			}
 		}
 	}
 }
 //移动格子
-bool move()
+bool move(direction dir)
 {
+	copyData();
 	//获取键盘按键 72 80 75 77
-	int key = _getch();
-	switch (key)
+	switch (dir)
 	{
-	case 'W':
-	case 'w':
-	case 72:
+	case UP:
 		moveUp();
 		break;
-	case 'S':
-	case 's':
-	case 80:
+	case DOWN:
 		moveDown();
 		break;
-	case 'A':
-	case 'a':
-	case 75:
+	case LEFT:
 		moveLeft();
 		break;
-	case 'D':
-	case 'd':
-	case 77:
+	case RIGHT:
 		moveRight();
 		break;
 	}
@@ -299,13 +334,13 @@ bool move()
 		mapFillNumber();
 		movedflag = 0;
 	}
+
+	gameOverCheck();
 	
 	return 1;
 }
 
 //游戏结束检测，为重启按钮做准备
-//暂时木有使用
-//20221026加入
 void gameOverCheck() {
 	if (gameInfo.emptyBlock != 0)
 		return;

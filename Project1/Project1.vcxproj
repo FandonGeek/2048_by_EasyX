@@ -135,6 +135,28 @@
     <ClInclude Include="tools.h" />
     <ClInclude Include="Game.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="pieces\0.png" />
+    <Image Include="pieces\1024.png" />
+    <Image Include="pieces\128.png" />
+    <Image Include="pieces\16.png" />
+    <Image Include="pieces\2.png" />
+    <Image Include="pieces\2048.png" />
+    <Image Include="pieces\256.png" />
+    <Image Include="pieces\32.png" />
+    <Image Include="pieces\4.png" />
+    <Image Include="pieces\4096.png" />
+    <Image Include="pieces\512.png" />
+    <Image Include="pieces\64.png" />
+    <Image Include="pieces\8.png" />
+    <Image Include="pieces\8192.png" />
+    <Image Include="pieces\bk.png" />
+    <Image Include="pieces\bk1.png" />
+    <Image Include="pieces\gameOver.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="pieces\bk.mp3" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

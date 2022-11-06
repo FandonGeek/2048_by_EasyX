@@ -1,8 +1,8 @@
-top_score:904
-current_score:904
-maxNum:128
-current_maxNum:128
+top_score:5360
+current_score:0
+maxNum:512
+current_maxNum:2
+   0    0    0    0 
    2    0    0    0 
-   0    2    0    2 
-   0    4    8    8 
-   4   32  128    4 
+   0    0    0    2 
+   0    0    0    0 

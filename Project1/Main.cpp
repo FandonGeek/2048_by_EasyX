@@ -3,7 +3,7 @@
 #include"Game.h"
 #include <conio.h>
 
-#pragma comment(lib,"Winmm.lib")
+#pragma comment(lib,"Winmm.lib")	//用于音乐播放的Windows API
 
 
 #define INTERVAL  15	//格子间的间隔
@@ -12,6 +12,7 @@
 
 //38 * 195
 IMAGE bk;				//背景
+IMAGE gameOver;         //游戏结束
 
 //定义图片资源
 IMAGE imgs[11];
@@ -25,6 +26,7 @@ void loadImgs();
 void loadResource();
 
 void drawBackgroud();
+void printGame();
 void draw();
 void drawGameInfo();
 void drawBlocks();
@@ -35,44 +37,78 @@ int main(void)
 	//窗口
 	initgraph(584, 734, EX_SHOWCONSOLE);
 
-	/*未完成的音乐播放
-	mciSendString(_T("open 1.mp3 alias bkmusic"), NULL, 0, NULL);
-	mciSendString(_T("play bkmusic retreat"), NULL, 0, NULL);
-	*/
+	 
 
 	loadResource();
 	gameSave();
 
+	BeginBatchDraw();//批量画图，无闪烁
 	draw();
+	EndBatchDraw();
+
+	//音乐播放
+	mciSendString(_T("open .\\pieces\\bk.mp3"), NULL, 0, NULL);
+	mciSendString(_T("play .\\pieces\\bk.mp3 repeat"), NULL, 0, NULL);
+	
 	
 	
 	while (true)
 	{
-		BeginBatchDraw();//批量画图，无闪烁
+		//批量画图，无闪烁
+		BeginBatchDraw();
+		printGame();
 		draw();
 		EndBatchDraw();
+		
 
-		/*未完成的鼠标检测，用于重启游戏
+		//凑合着用的游戏主界面运行方式
+		int key;
+		while (!_kbhit());
+		key = _getch();
+		switch (key)
+		{
+		case 'W':
+		case 'w':
+		case 72:
+			move(UP);
+			break;
+		case 'S':
+		case 's':
+		case 80:
+			move(DOWN);
+			break;
+		case 'A':
+		case 'a':
+		case 75:
+			move(LEFT);
+			break;
+		case 'D':
+		case 'd':
+		case 77:
+			move(RIGHT);
+			break;
+		case 'N':
+		case 'n':
+			init();
+			break;
+		default:
+			break;
+		}
+
+		/* 还是有问题，体现在鼠标和键盘似乎不能在一个页面同时使用，
+		 * 是要特殊的处理还是easyX的锅我暂且不知，先去补作业了
 		ExMessage m;
 		m = getmessage(EX_MOUSE);
-		if (m.x >= 427 && m.x <=561  && m.y >= 107 && m.y <= 155) {
+		if (peekmessage(&m, EM_MOUSE)) {
 			if (m.message == WM_LBUTTONDOWN) {
-				
-				init();
+				if (m.x >= 427 && m.x <= 561 && m.y >= 107 && m.y <= 155) {
+					init();
+				}
 			}
 		}
 		*/
-
-		move();
-		for (int i = 0; i < ROW; i++) {
-			for (int j = 0; j < COL; j++) {
-				printf("%4d", map[i][j]);
-			}
-			printf("\n");
-		}
-		printf("Cur:%d\nMax:%d\nMaxMergeNum:%d\nemptyBlock:%d\n", gameInfo.currentScore, gameInfo.maxScore, gameInfo.maxMergeNum,gameInfo.emptyBlock);
 		
-		//20221027加入
+		//游戏保存
 		gameSave();
 	}
 	
@@ -84,6 +120,7 @@ int main(void)
 
 void loadImgs() {
 	loadimage(&bk, "./pieces/bk.png", 584, 734);
+	loadimage(&gameOver, "./pieces/gameOver.png", 300, 40);
 
 	//0位贴图
 	loadimage(&zero, "./pieces/0.png", GRID_SIZE, GRID_SIZE);
@@ -117,10 +154,25 @@ void loadResource()
 	loadRecord();
 }
 
+//游戏控制台调试函数
+void printGame()
+{
+	for (int i = 0; i < ROW; i++) {
+		for (int j = 0; j < COL; j++) {
+			printf("%4d", map[i][j]);
+		}
+		printf("\n");
+	}
+	printf("Cur:%d\nMax:%d\nMaxMergeNum:%d\nemptyBlock:%d\n", gameInfo.currentScore, gameInfo.maxScore, gameInfo.maxMergeNum, gameInfo.emptyBlock);
+} 
+
 //画图更新层
 void draw() {
 	drawGameInfo();
 	drawBlocks();
+	if (gameInfo.gameOverFlag == 1) {
+		drawImg(150,350,&gameOver);
+	}
 }
 
 //背景和分数
@@ -129,12 +181,23 @@ void drawGameInfo() {
 
 	setbkmode(TRANSPARENT);
 	settextcolor(RGB(241, 231, 214));
-	settextstyle(20, 0,_T("黑体"));
+	settextstyle(20, 0,"黑体");
 	char s1[10],s2[10];
 	sprintf_s(s1, "%8d", gameInfo.currentScore);
-	outtextxy(370, 50, s1);
+	outtextxy(373, 50, s1);
 	sprintf_s(s2, "%8d", gameInfo.maxScore);
-	outtextxy(460, 50, s2);
+	outtextxy(473, 50, s2);
+
+	//配合全键盘操作所作的声明
+	settextcolor(RGB(205, 133, 63));
+	settextstyle(17,0, "黑体");
+	char s3[0xff];
+	sprintf_s(s3, "本页面使用键盘操作");
+	outtextxy(20, 100, s3);
+	sprintf_s(s3, "按方向键或W、S、A、D移动方块");
+	outtextxy(20, 125, s3);
+	sprintf_s(s3, "按N重新开始游戏");
+	outtextxy(20, 150, s3);
 }
 
 //绘制数字块
